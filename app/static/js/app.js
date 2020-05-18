@@ -109,7 +109,6 @@ const Register = Vue.component('register-form', {
         return response.json();
     })
     .then(function (jsonResponse) {
-    // display a success message
         console.log(jsonResponse);
         window.location.replace('http://localhost:8080')
     })
