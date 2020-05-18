@@ -3,12 +3,12 @@ import datetime
 import jwt
 from app import app, db, login_manager
 from app.models import Post, Users, Likes, Follows
-from flask import render_template, request, session, flash, url_for, redirect, jsonify, json, make_response
+from flask import render_template, request, session, flash, url_for, redirect, g, jsonify, json, make_response
 from werkzeug.utils import secure_filename
 from .forms import RegisterForm, LoginForm, PostForm
 from werkzeug.security import check_password_hash
 from flask_login import login_user, logout_user, current_user, login_required
-
+from functools import wraps
 
 
 @app.route('/', defaults={'path': ''})
@@ -36,6 +36,36 @@ def form_errors(form):
 
     return error_messages
 
+
+def requires_auth(f):
+  @wraps(f)
+  def decorated(*args, **kwargs):
+    auth = request.headers.get('Authorization', None)
+    if not auth:
+      return jsonify({'code': 'authorization_header_missing', 'description': 'Authorization header is expected'}), 401
+
+    parts = auth.split()
+
+    if parts[0].lower() != 'bearer':
+      return jsonify({'code': 'invalid_header', 'description': 'Authorization header must start with Bearer'}), 401
+    elif len(parts) == 1:
+      return jsonify({'code': 'invalid_header', 'description': 'Token not found'}), 401
+    elif len(parts) > 2:
+      return jsonify({'code': 'invalid_header', 'description': 'Authorization header must be Bearer + \s + token'}), 401
+
+    token = parts[1]
+    try:
+         payload = jwt.decode(token, 'app.config[SECRET_KEY]')
+
+    except jwt.ExpiredSignature:
+        return jsonify({'code': 'token_expired', 'description': 'token is expired'}), 401
+    except jwt.DecodeError:
+        return jsonify({'code': 'token_invalid_signature', 'description': 'Token signature is invalid'}), 401
+
+    g.current_user = user = payload
+    return f(*args, **kwargs)
+
+  return decorated
 
 
 
@@ -67,7 +97,8 @@ def register():
         register = [{"message": "Registered Successfully"}]
     
         return jsonify(register = register)
-    return jsonify(form_errors(form))
+    register = [{"message": "Unsuccessful Registration"}]
+    return jsonify(register = register)
     
 
 @app.route('/api/auth/login', methods = ['POST'])
@@ -121,9 +152,20 @@ def post (user_id):
         return jsonify({"Post" : "yes"})
 
     if request.method == "GET":
-        user = Users.query.filter_by(id=user_id).first()
-        posts = Post.query.filter_by(user_id=user_id).count()
-        follows = Follows.query.filter_by(user_id=user_id).count()
+        auth = request.headers.get('Authorization', None)
+        parts = auth.split()
+        token = parts[1]
+        myId = (jwt.decode(token, 'app.config[SECRET_KEY]')['user_Id'])
+        
+        user = Users.query.filter_by(id=int(user_id)).first()
+        posts = Post.query.filter_by(user_id=int(user_id)).count()
+        follows = Follows.query.filter_by(user_id=int(user_id)).count()
+        followers = Follows.query.filter_by(user_id=int(user_id))
+        followersList = []
+        for follower in followers:
+            followersList.append(follower.follower_id)
+
+        following = myId in followersList
         d = {}
         d['uid'] = user.id
         d['pphoto'] = user.profile_photo
@@ -134,6 +176,7 @@ def post (user_id):
         d['date'] = user.joined_on
         d['posts'] = posts
         d['follows'] = follows
+        d['following'] = following
 
         return jsonify(d=d)
     return jsonify({"Post" : "Not Valid"})
@@ -152,8 +195,8 @@ def follow (user_id):
             db.session.add(follow)
             db.session.commit()
             user = Users.query.filter_by(id=int(user_id)).first()
-            posts = Post.query.filter_by(user_id=user_id).count()
-            follows = Follows.query.filter_by(user_id=user_id).count()
+            posts = Post.query.filter_by(user_id=int(user_id)).count()
+            follows = Follows.query.filter_by(user_id=int(user_id)).count()
             d = {}
             d['uid'] = user.id
             d['pphoto'] = user.profile_photo
@@ -169,24 +212,35 @@ def follow (user_id):
 
 
 @app.route('/api/posts', methods = ['GET'])
+@requires_auth
 def all_post ():
     posts = db.session.query(Post).all()
     
+    auth = request.headers.get('Authorization', None)
+    parts = auth.split()
+    token = parts[1]
+    myId = (jwt.decode(token, 'app.config[SECRET_KEY]')['user_Id'])
     
     list2 = []
     for post in posts:
         d = {}
         uid = post.user_id
-        user = Users.query.filter_by(id=uid).first()
-        d['uid'] = user.id
+        user = Users.query.filter_by(id=int(uid)).first()
+        d['uid'] = uid
         d['pphoto'] = user.profile_photo
         d['user'] = user.username
         d['pid'] = post.id
         d['photo'] = post.photo
         d['caption'] = post.caption
         d['date'] = post.created_on
-        likes = Likes.query.filter_by(post_id=post.id).count()
-        d['likes']= likes
+        likes = Likes.query.filter_by(post_id=int(post.id)).count()
+        likers = Likes.query.filter_by(post_id=int(post.id))
+        likersList =[]
+        for like in likers:
+            likersList.append(like.user_id)
+        like = myId in likersList
+        d['likes'] = likes
+        d['like'] = like
         list2.append(d)
 
     data = dict(list(enumerate(list2)))
@@ -210,7 +264,32 @@ def like (post_id):
     return jsonify({"Follow" : "failed"})
 
 
+@app.route('/api/profile', methods = ['GET'])
+@requires_auth
+def profile():
+    if request.method == "GET":
+        auth = request.headers.get('Authorization', None)
+        parts = auth.split()
+        token = parts[1]
+        uid = (jwt.decode(token, 'app.config[SECRET_KEY]')['user_Id'])
+        user = Users.query.filter_by(id=int(uid)).first()
+        followers = Follows.query.filter_by(user_id=int(uid)).count()
+        following = Follows.query.filter_by(follower_id=int(uid)).count()
+        d = {}
+        d['pphoto'] = user.profile_photo
+        d['user'] = user.username
+        d['fname'] = user.firstname
+        d['lname'] = user.lastname
+        d['location'] = user.location
+        d['email'] = user.email
+        d['bio'] = user.biography
+        d['date'] = user.joined_on
+        d['followers'] = followers
+        d['following'] = following
 
+        return jsonify(d=d)
+    return jsonify({"Profile" : "no"})
+                
     
 
 # user_loader callback. This callback is used to reload the user object from

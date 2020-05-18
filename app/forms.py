@@ -5,22 +5,22 @@ from wtforms.validators import DataRequired, Email
 
 
 class RegisterForm(FlaskForm):
-    uname = StringField('Username')
-    pword = PasswordField('Password')
-    fname = StringField('Firstname') 
-    lname = StringField('Lastname')
-    email = StringField('Email')
-    location = StringField('Location')
-    bio = TextAreaField('Biography')
-    photo = FileField('Profile Photo')
+    uname = StringField('Username', validators=[DataRequired()])
+    pword = PasswordField('Password', validators=[DataRequired()])
+    fname = StringField('Firstname', validators=[DataRequired()]) 
+    lname = StringField('Lastname', validators=[DataRequired()])
+    email = StringField('Email', validators=[DataRequired(), Email])
+    location = StringField('Location', validators=[DataRequired()])
+    bio = TextAreaField('Biography', validators=[DataRequired()])
+    photo = FileField('Profile Photo', validators=[DataRequired()])
     
     
 class LoginForm(FlaskForm):
-    uname = StringField('Username')
-    pword = PasswordField('Password')
+    uname = StringField('Username', validators=[DataRequired()])
+    pword = PasswordField('Password', validators=[DataRequired()])
 
 
 class PostForm(FlaskForm):
-    photo = FileField('Photo')
-    caption = TextAreaField ('Caption')
+    photo = FileField('Photo', validators=[DataRequired()])
+    caption = TextAreaField ('Caption', validators=[DataRequired()])
     
