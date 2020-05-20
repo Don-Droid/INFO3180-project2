@@ -1,0 +1,92 @@
+body {
+    padding-top: 5rem;
+    
+}
+
+footer  {
+    padding-top: 20px;
+}
+
+.wrapper{
+    background-color:rgb(229, 232, 253);
+    border-radius: 5px;
+    border-top: blue;
+    border-top-style: solid;
+    box-shadow: 5px 5px #888888;
+    padding: 15px;
+    height: 100%;
+    max-width: 500px;
+}
+
+#pic{
+    max-width: 100%;
+    max-height: 100%;
+    display: block;
+}
+
+#conts {
+    display: grid;
+    grid-template-columns: 1fr 1fr 2fr 1fr;
+    grid-template-rows: 5px, 15px, 15px, 5px;
+    grid-gap: 5px;
+    background-color:rgb(229, 232, 253);
+    border-radius: 5px;
+    border-top: blue;
+    border-top-style: solid;
+    box-shadow: 5px 5px #888888;
+    padding: 5px;
+    min-height: 500px;
+  }
+
+#a1{
+    grid-column: 1 ;
+    grid-row: 1;
+}
+
+#b1{
+    grid-column: 2 ;
+    grid-row: 1;
+}
+
+#a2{
+    grid-column: 1;
+    grid-row: 2;
+}
+
+#a3{
+    grid-column: 1 / 4 ;
+    grid-row: 4;
+}
+
+#d4{
+    grid-column: 4 ;
+    grid-row: 4;
+}
+#ar{
+    position: absolute;
+    right: 100px;
+    top: 100px;
+}
+
+.home{
+    padding: 50px;
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    grid-template-rows: 2; 
+     
+}
+
+#left{
+    width: auto;
+    height: auto;
+}
+ 
+#right{
+    background-color:rgb(229, 232, 253);
+    border-radius: 5px;
+    border-top: blue;
+    border-top-style: solid;
+    box-shadow: 5px 5px #888888;
+    padding: 15px;
+    height: 100%;
+}
