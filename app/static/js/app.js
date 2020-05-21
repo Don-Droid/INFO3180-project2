@@ -183,25 +183,28 @@ const Explore = Vue.component('explore', {
     <div class="form d-flex justify-content-center">
       <div class="posts">        
         <div v-for="post in posts" class="post_item" >
-          <section class= "wrapper" id="conts">
+          <section id="conts">
               <div id="a1">
                 <img :src = post.pphoto id="pic" alt="Profile photo">
               </div>
               <div id="b1">
               <router-link :to = "{name: 'user', params:{id:post.uid}}"> {{post.user}}</router-link>
               </div>
-              <div id="a2">
-                <img :src = post.photo id="pic" alt="photo">
+              <div id="a2pic">
+                <img :src = post.photo  alt="photo">
               </div>
               <div id="a3">
                 {{post.caption}} 
               </div>
               <div id="a4">
-                <router-link :to = "{name: 'like', params:{id:post.pid}}"> Like </router-link>
+                <router-link :to = "{name: 'like', params:{id:post.pid}}"> <i class="fa fa-thumbs-up"> </i> </router-link>
               </div>
               <div id="d4">
                 {{post.date}} 
               </div>
+              <div id="b4">
+                <p>Likes</p>
+              </div>  
           </section>
           <br>
         </div>

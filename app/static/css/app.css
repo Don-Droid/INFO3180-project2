@@ -26,8 +26,8 @@ footer  {
 
 #conts {
     display: grid;
-    grid-template-columns: 1fr 1fr 2fr 1fr;
-    grid-template-rows: 5px, 15px, 15px, 5px;
+    grid-template-columns: 50px 50px 100px auto;
+    grid-template-rows: 50px auto 150px 30px;
     grid-gap: 5px;
     background-color:rgb(229, 232, 253);
     border-radius: 5px;
@@ -35,33 +35,57 @@ footer  {
     border-top-style: solid;
     box-shadow: 5px 5px #888888;
     padding: 5px;
-    min-height: 500px;
+    min-height: auto;
   }
 
 #a1{
     grid-column: 1 ;
     grid-row: 1;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
 }
 
 #b1{
     grid-column: 2 ;
     grid-row: 1;
+    font-weight: bold;
+    padding-top: 15px;
 }
 
-#a2{
-    grid-column: 1;
+#a2pic{
+    grid-column: 1 / 5;
     grid-row: 2;
+    max-width: 100%;
+    max-height: 100%;
+    padding-top: 20px;
+
 }
 
 #a3{
-    grid-column: 1 / 4 ;
-    grid-row: 4;
+    grid-column: 1 / 5 ;
+    grid-row: 3;
 }
 
 #d4{
     grid-column: 4 ;
     grid-row: 4;
+    text-align: right;
 }
+
+#a4{
+    grid-column: 1;
+    grid-row: 4;
+    text-align: center;
+    font-size: 25px;
+}
+
+#b4{
+    grid-column: 2;
+    grid-row: 4;
+}
+
 #ar{
     position: absolute;
     right: 100px;

@@ -3,7 +3,7 @@ from werkzeug.security import generate_password_hash
 
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.String(80))
+    user_id = db.Column(db.Integer)
     photo = db.Column(db.String(150))
     caption = db.Column(db.String(500))
     created_on = db.Column(db.String(50))
@@ -60,8 +60,8 @@ class Users (db.Model):
 
 class Likes (db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.String(80), unique=True)
-    post_id = db.Column(db.String(80), unique=True)
+    user_id = db.Column(db.Integer)
+    post_id = db.Column(db.Integer)
     
     def __init__(self, user_id, post_id):
         self.user_id = user_id
@@ -72,8 +72,8 @@ class Likes (db.Model):
 
 class Follows (db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.String(80))
-    follower_id = db.Column(db.String(80), unique=True)
+    user_id = db.Column(db.Integer)
+    follower_id = db.Column(db.Integer, unique=True)
     
     def __init__(self, user_id, follower_id):
         self.user_id = user_id

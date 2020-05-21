@@ -82,7 +82,6 @@ def login ():
             user = Users.query.filter_by(username=uname).first()
             if user is not None and check_password_hash(user.password, pword):
                 login_user(user)
-                #token = request.headers['X-CSRFToken']
                 token = jwt.encode({"user_Id" : user.id}, 'app.config[SECRET_KEY]', algorithm='HS256').decode('utf-8')
 
                 login = [{"message": "Login Successfully"},
@@ -115,7 +114,7 @@ def post (user_id):
 
         path = url_for('static', filename= "images/photos/"+file)
 
-        post = Post(user_id=user_id, photo=path, caption=caption, created_on=date)
+        post = Post(user_id=int(user_id), photo=path, caption=caption, created_on=date)
         db.session.add(post)
         db.session.commit()
         
@@ -149,10 +148,10 @@ def follow (user_id):
             token = parts[1]
             followID = jwt.decode(token, 'app.config[SECRET_KEY]')
 
-            follow = Follows(user_id=user_id,follower_id=followID['user_Id'])
-            #db.session.add(follow)
-            #db.session.commit()
-            user = Users.query.filter_by(id=user_id).first()
+            follow = Follows(user_id=int(user_id),follower_id=int(followID['user_Id']))
+            db.session.add(follow)
+            db.session.commit()
+            user = Users.query.filter_by(id=int(user_id)).first()
             posts = Post.query.filter_by(user_id=user_id).count()
             follows = Follows.query.filter_by(user_id=user_id).count()
             d = {}
@@ -173,6 +172,7 @@ def follow (user_id):
 def all_post ():
     posts = db.session.query(Post).all()
     
+    
     list2 = []
     for post in posts:
         d = {}
@@ -185,6 +185,8 @@ def all_post ():
         d['photo'] = post.photo
         d['caption'] = post.caption
         d['date'] = post.created_on
+        likes = Likes.query.filter_by(post_id=post.id).count()
+        d['likes']= likes
         list2.append(d)
 
     data = dict(list(enumerate(list2)))
@@ -201,7 +203,7 @@ def like (post_id):
             token = parts[1]
             liker = jwt.decode(token, 'app.config[SECRET_KEY]')
             
-            like = Likes(user_id=liker['user_Id'],post_id=post_id)
+            like = Likes(user_id=int(liker['user_Id']),post_id=int(post_id))
             db.session.add(like)
             db.session.commit()
             return all_post()
